@@ -1,87 +1,96 @@
-"use client";
-import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import Image from "next/image";
-import { getRandomInterviewCover } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import DisplayTechIcons from "@/components/DisplayTechIcons";
+import Image from "next/image";
 
-// ✅ Define missing types
-type InterviewCardProps = {
-    interviewId: string;
-    userId: string;
-    role: string;
-    type: string;
-    techstack: string[];
-    createdAt: string | number | Date;
-};
+import { Button } from "./ui/button";
+import DisplayTechIcons from "./DisplayTechIcons";
 
-type Feedback = {
-    createdAt: string | number | Date;
-    totalScore: number;
-    finalAssessment: string;
-};
+import { cn, getRandomInterviewCover } from "@/lib/utils";
+import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
 
-const InterviewCard = ({
-                           interviewId,
-                           userId,
-                           role,
-                           type,
-                           techstack,
-                           createdAt,
-                       }: InterviewCardProps) => {
-    // ❗ Placeholder - Replace with real feedback fetch if needed
-    const feedback = null as Feedback | null;
+const InterviewCard = async ({
+                                 interviewId,
+                                 userId,
+                                 role,
+                                 type,
+                                 techstack,
+                                 createdAt,
+                             }: InterviewCardProps) => {
+    const feedback =
+        userId && interviewId
+            ? await getFeedbackByInterviewId({
+                interviewId,
+                userId,
+            })
+            : null;
 
     const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
+
+    const badgeColor =
+        {
+            Behavioral: "bg-light-400",
+            Mixed: "bg-light-600",
+            Technical: "bg-light-800",
+        }[normalizedType] || "bg-light-600";
+
     const formattedDate = dayjs(
         feedback?.createdAt || createdAt || Date.now()
     ).format("MMM D, YYYY");
-
-    const [coverImage, setCoverImage] = useState("/covers/default.png");
-
-    useEffect(() => {
-        setCoverImage(getRandomInterviewCover());
-    }, []);
 
     return (
         <div className="card-border w-[360px] max-sm:w-full min-h-96">
             <div className="card-interview">
                 <div>
-                    <div className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-light-600">
-                        <p className="badge-text">{normalizedType}</p>
+                    {/* Type Badge */}
+                    <div
+                        className={cn(
+                            "absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg",
+                            badgeColor
+                        )}
+                    >
+                        <p className="badge-text ">{normalizedType}</p>
                     </div>
 
+                    {/* Cover Image */}
                     <Image
-                        src={coverImage}
-                        alt="cover image"
+                        src={getRandomInterviewCover()}
+                        alt="cover-image"
                         width={90}
                         height={90}
-                        className="rounded-full object-cover size-[90px]"
+                        className="rounded-full object-fit size-[90px]"
                     />
 
+                    {/* Interview Role */}
                     <h3 className="mt-5 capitalize">{role} Interview</h3>
 
+                    {/* Date & Score */}
                     <div className="flex flex-row gap-5 mt-3">
-                        <div className="flex flex-row gap-2 items-center">
-                            <Image src="/calendar.svg" alt="calendar" width={22} height={22} />
+                        <div className="flex flex-row gap-2">
+                            <Image
+                                src="/calendar.svg"
+                                width={22}
+                                height={22}
+                                alt="calendar"
+                            />
                             <p>{formattedDate}</p>
                         </div>
+
                         <div className="flex flex-row gap-2 items-center">
-                            <Image src="/star.svg" alt="star" width={22} height={22} />
-                            <p>{feedback?.totalScore ?? "---"}/100</p>
+                            <Image src="/star.svg" width={22} height={22} alt="star" />
+                            <p>{feedback?.totalScore || "---"}/100</p>
                         </div>
                     </div>
 
-                    <p className="line-clamp-2 mt-5 text-sm text-muted-foreground">
+                    {/* Feedback or Placeholder Text */}
+                    <p className="line-clamp-2 mt-5">
                         {feedback?.finalAssessment ||
-                            "You haven't taken the interview yet. Take it now to improve your skills."}
+                            "You haven't taken this interview yet. Take it now to improve your skills."}
                     </p>
                 </div>
 
-                <div className="flex flex-row justify-between items-center mt-6">
+                <div className="flex flex-row justify-between">
                     <DisplayTechIcons techStack={techstack} />
+
                     <Button className="btn-primary">
                         <Link
                             href={
@@ -101,7 +110,6 @@ const InterviewCard = ({
 
 export default InterviewCard;
 
-//
 // "use client";
 // import React, { useEffect, useState } from "react";
 // import dayjs from "dayjs";
@@ -111,6 +119,22 @@ export default InterviewCard;
 // import Link from "next/link";
 // import DisplayTechIcons from "@/components/DisplayTechIcons";
 //
+// // ✅ Define missing types
+// type InterviewCardProps = {
+//     interviewId: string;
+//     userId: string;
+//     role: string;
+//     type: string;
+//     techstack: string[];
+//     createdAt: string | number | Date;
+// };
+//
+// type Feedback = {
+//     createdAt: string | number | Date;
+//     totalScore: number;
+//     finalAssessment: string;
+// };
+//
 // const InterviewCard = ({
 //                            interviewId,
 //                            userId,
@@ -119,7 +143,9 @@ export default InterviewCard;
 //                            techstack,
 //                            createdAt,
 //                        }: InterviewCardProps) => {
+//     // ❗ Placeholder - Replace with real feedback fetch if needed
 //     const feedback = null as Feedback | null;
+//
 //     const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
 //     const formattedDate = dayjs(
 //         feedback?.createdAt || createdAt || Date.now()
@@ -129,7 +155,7 @@ export default InterviewCard;
 //
 //     useEffect(() => {
 //         setCoverImage(getRandomInterviewCover());
-//     }, []); // ✅ runs only on client
+//     }, []);
 //
 //     return (
 //         <div className="card-border w-[360px] max-sm:w-full min-h-96">
@@ -138,31 +164,36 @@ export default InterviewCard;
 //                     <div className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-light-600">
 //                         <p className="badge-text">{normalizedType}</p>
 //                     </div>
+//
 //                     <Image
 //                         src={coverImage}
 //                         alt="cover image"
 //                         width={90}
 //                         height={90}
-//                         className="rounded-full object-fit size-[90px]"
+//                         className="rounded-full object-cover size-[90px]"
 //                     />
+//
 //                     <h3 className="mt-5 capitalize">{role} Interview</h3>
-//                     <div className="flexx flex-row gap-5 mt-3">
-//                         <div className="flex flex-row gap-2">
+//
+//                     <div className="flex flex-row gap-5 mt-3">
+//                         <div className="flex flex-row gap-2 items-center">
 //                             <Image src="/calendar.svg" alt="calendar" width={22} height={22} />
 //                             <p>{formattedDate}</p>
 //                         </div>
 //                         <div className="flex flex-row gap-2 items-center">
 //                             <Image src="/star.svg" alt="star" width={22} height={22} />
-//                             <p>{feedback?.totalScore || "---"}/100</p>
+//                             <p>{feedback?.totalScore ?? "---"}/100</p>
 //                         </div>
 //                     </div>
-//                     <p className="line-clamp-2 mt-5">
+//
+//                     <p className="line-clamp-2 mt-5 text-sm text-muted-foreground">
 //                         {feedback?.finalAssessment ||
 //                             "You haven't taken the interview yet. Take it now to improve your skills."}
 //                     </p>
 //                 </div>
-//                 <div className="flex flex-row justify-between">
-//                     <DisplayTechIcons techStack={techstack}/>
+//
+//                 <div className="flex flex-row justify-between items-center mt-6">
+//                     <DisplayTechIcons techStack={techstack} />
 //                     <Button className="btn-primary">
 //                         <Link
 //                             href={
