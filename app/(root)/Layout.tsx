@@ -25,7 +25,6 @@ const Layout = async ({ children }: { children: ReactNode }) => {
 
 export default Layout;
 
-//
 // import Link from "next/link";
 // import Image from "next/image";
 // import { ReactNode } from "react";
