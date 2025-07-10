@@ -50,16 +50,21 @@ interface InterviewCardProps {
 
 
 
-
 interface AgentProps {
   userName: string;
-  userId?: string;
+  userId: string;
   interviewId?: string;
   feedbackId?: string;
-  profileImage?: string;
-  type: "generate" | "interview";
+  type: "generate" | "custom";
   questions?: string[];
+
+  // 🆕 Add these props for dynamic interview generation
+  role?: string;
+  level?: string;
+  amount?: string;
+  techstack?: string;
 }
+
 
 interface RouteParams {
   params: Promise<Record<string, string>>;

@@ -28,6 +28,10 @@ const Agent = ({
                    feedbackId,
                    type,
                    questions,
+                   role,
+                   level,
+                   amount,
+                   techstack,
                }: AgentProps) => {
     const router = useRouter();
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -127,10 +131,19 @@ const Agent = ({
                     variableValues: {
                         username: userName,
                         userid: userId,
+                        role: role ?? "",
+                        level: level ?? "",
+                        amount: amount ?? "",
+                        techstack: techstack ?? "",
+                        type: "technical"
                     },
                 }
             );
-        } else {
+        }
+
+
+
+        else {
             let formattedQuestions = "";
             if (questions) {
                 formattedQuestions = questions
