@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
@@ -14,12 +15,10 @@ async function Home() {
     const user = await getCurrentUser();
 
     if (!user || !user.id) {
-        return (
-            <div className="text-center mt-20 text-lg">
-                Please sign in to view your interviews.
-            </div>
-        );
+        redirect("/sign-in");
     }
+
+
 
     const [userInterviews, allInterview] = await Promise.all([
         getInterviewsByUserId(user.id),
