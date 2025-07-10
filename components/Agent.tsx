@@ -114,7 +114,6 @@ const Agent = ({
         }
     }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
-
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
@@ -228,29 +227,3 @@ const Agent = ({
 };
 
 export default Agent;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

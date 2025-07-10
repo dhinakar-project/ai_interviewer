@@ -203,6 +203,26 @@ export const interviewCovers = [
   "/tiktok.png",
   "/yahoo.png",
 ];
+// types/index.d.ts
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  profileURL?: string; // ✅ this is the missing field
+}
+
+export interface SignUpParams {
+  uid: string;
+  name: string;
+  email: string;
+  profileURL: string;
+}
+
+export interface SignInParams {
+  email: string;
+  idToken: string;
+}
 
 export const dummyInterviews: Interview[] = [
   {
