@@ -29,6 +29,14 @@ export async function signUp(params: SignUpParams) {
     const { uid, name, email } = params;
 
     try {
+        // Validate input
+        if (!uid || !name || !email) {
+            return {
+                success: false,
+                message: "Missing required fields. Please provide all information.",
+            };
+        }
+
         // check if user exists in db
         const userRecord = await db.collection("users").doc(uid).get();
         if (userRecord.exists)
@@ -41,8 +49,8 @@ export async function signUp(params: SignUpParams) {
         await db.collection("users").doc(uid).set({
             name,
             email,
-            // profileURL,
-            // resumeURL,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         });
 
         return {
@@ -57,6 +65,13 @@ export async function signUp(params: SignUpParams) {
             return {
                 success: false,
                 message: "This email is already in use",
+            };
+        }
+
+        if (error.code === "permission-denied") {
+            return {
+                success: false,
+                message: "Database access denied. Please contact support.",
             };
         }
 
@@ -79,8 +94,13 @@ export async function signIn(params: SignInParams) {
             };
 
         await setSessionCookie(idToken);
+        
+        return {
+            success: true,
+            message: "Signed in successfully.",
+        };
     } catch (error: any) {
-        console.log("");
+        console.error("Sign in error:", error);
 
         return {
             success: false,
@@ -91,9 +111,15 @@ export async function signIn(params: SignInParams) {
 
 // Sign out user by clearing the session cookie
 export async function signOut() {
-    const cookieStore = await cookies();
-
-    cookieStore.delete("session");
+    try {
+        const cookieStore = await cookies();
+        cookieStore.delete("session");
+        
+        return { success: true };
+    } catch (error) {
+        console.error("Error signing out:", error);
+        return { success: false };
+    }
 }
 
 // Get current user from session cookie

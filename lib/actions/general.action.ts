@@ -10,12 +10,17 @@ export async function createFeedback(params: CreateFeedbackParams) {
     const { interviewId, userId, transcript, feedbackId } = params;
 
     try {
+        console.log("Creating feedback for interview:", interviewId);
+        console.log("Transcript length:", transcript.length);
+
         const formattedTranscript = transcript
             .map(
                 (sentence: { role: string; content: string }) =>
                     `- ${sentence.role}: ${sentence.content}\n`
             )
             .join("");
+
+        console.log("Formatted transcript:", formattedTranscript.substring(0, 200) + "...");
 
         const { object } = await generateObject({
             model: google("gemini-2.0-flash-001", {
@@ -30,13 +35,15 @@ export async function createFeedback(params: CreateFeedbackParams) {
         Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
         - **Communication Skills**: Clarity, articulation, structured responses.
         - **Technical Knowledge**: Understanding of key concepts for the role.
-        - **Problem-Solving**: Ability to analyze problems and propose solutions.
-        - **Cultural & Role Fit**: Alignment with company values and job role.
-        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+        - **Problem Solving**: Ability to analyze problems and propose solutions.
+        - **Cultural Fit**: Alignment with company values and job role.
+        - **Confidence and Clarity**: Confidence in responses, engagement, and clarity.
         `,
             system:
                 "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
         });
+
+        console.log("Generated feedback object:", object);
 
         const feedback = {
             interviewId: interviewId,

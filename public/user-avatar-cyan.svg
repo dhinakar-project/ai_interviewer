@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- White background -->
+  <rect width="120" height="120" fill="white"/>
+  
+  <!-- Circular frame with concentric light blue rings -->
+  <circle cx="60" cy="60" r="58" fill="#E6F3FF"/>
+  <circle cx="60" cy="60" r="54" fill="#D1E7FF"/>
+  <circle cx="60" cy="60" r="50" fill="#BCDBFF"/>
+  
+  <!-- Inner background with subtle texture -->
+  <circle cx="60" cy="60" r="46" fill="#A8CFFF"/>
+  
+  <!-- Avatar body (blue shirt) -->
+  <ellipse cx="60" cy="75" rx="25" ry="20" fill="#4A90E2"/>
+  
+  <!-- Neck -->
+  <ellipse cx="60" cy="55" rx="8" ry="6" fill="#FFE4C4"/>
+  
+  <!-- Head -->
+  <circle cx="60" cy="40" r="18" fill="#FFE4C4"/>
+  
+  <!-- Hair -->
+  <path d="M 42 25 Q 60 20 78 25 Q 78 35 75 40 Q 72 45 60 45 Q 48 45 45 40 Q 42 35 42 25 Z" fill="#2C3E50"/>
+  
+  <!-- Ears -->
+  <ellipse cx="45" cy="42" rx="3" ry="6" fill="#FFE4C4"/>
+  <ellipse cx="75" cy="42" rx="3" ry="6" fill="#FFE4C4"/>
+</svg>

@@ -22,6 +22,14 @@ const Feedback = async ({ params }: RouteParams) => {
         userId: user?.id!,
     });
 
+    // Redirect if no feedback exists
+    if (!feedback) {
+        console.log("No feedback found for interview:", id);
+        redirect(`/interview/${id}`);
+    }
+
+    console.log("Feedback found:", feedback);
+
     return (
         <section className="section-feedback">
             <div className="flex flex-row justify-center">
