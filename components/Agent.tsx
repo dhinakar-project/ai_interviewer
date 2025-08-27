@@ -35,6 +35,7 @@ const Agent = ({
                    level,
                    amount,
                    techstack,
+                   userProfileURL,
                }: AgentProps) => {
     const router = useRouter();
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -239,14 +240,22 @@ const Agent = ({
 
                     {/* User Profile Card */}
                     <div className="text-center space-y-6">
-                        <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto">
-                            <Image
-                                src="/user-avatar-cyan.svg"
-                                alt="User Profile"
-                                width={120}
-                                height={120}
-                                className="rounded-full object-cover w-full h-full"
-                            />
+                        <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto overflow-hidden">
+                            {userProfileURL ? (
+                                <Image
+                                    src={userProfileURL}
+                                    alt="User Profile"
+                                    width={128}
+                                    height={128}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-4xl font-bold">
+                                        {userName.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                         <div>
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{userName}</h3>

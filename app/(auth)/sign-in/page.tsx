@@ -1,6 +1,6 @@
 import AuthForm from "@/components/AuthForm";
 import Image from "next/image";
-
+//hey
 const Page = () => {
     return (
         <main className="min-h-[calc(100dvh)] grid grid-cols-1 lg:grid-cols-2">

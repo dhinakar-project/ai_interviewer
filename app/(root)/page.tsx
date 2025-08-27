@@ -8,6 +8,7 @@ import InterviewCard from "@/components/InterviewCard";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ProgressDashboard from "@/components/ProgressDashboard";
 import SignOutButton from "@/components/SignOutButton";
+import ProfileButton from "@/components/ProfileButton";
 
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import {
@@ -51,6 +52,7 @@ async function Home() {
                             <p className="text-sm font-medium text-gray-900">Welcome back,</p>
                             <p className="text-sm text-gray-600">{user?.name}</p>
                         </div>
+                        <ProfileButton />
                         <SignOutButton />
                     </div>
                 </header>

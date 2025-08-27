@@ -51,6 +51,7 @@ const Page = async () => {
                                 feedbackId={uuidv4()}
                                 type="custom"
                                 questions={questions}
+                                userProfileURL={user?.profileURL}
                             />
                         </div>
                     </div>

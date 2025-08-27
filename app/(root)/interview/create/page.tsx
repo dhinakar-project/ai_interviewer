@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
@@ -30,6 +30,7 @@ interface CreateInterviewForm {
 export default function CreateInterviewPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState<CreateInterviewForm>({
     role: "",
     type: INTERVIEW_TYPES.MIXED,
@@ -38,6 +39,28 @@ export default function CreateInterviewPage() {
     techstack: [],
     customQuestions: []
   });
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/user/me');
+        const result = await response.json();
+        
+        if (result.success) {
+          setCurrentUser(result.user);
+        } else {
+          toast.error("Failed to get user information");
+          router.push('/sign-in');
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        toast.error("Failed to get user information");
+        router.push('/sign-in');
+      }
+    };
+
+    fetchCurrentUser();
+  }, [router]);
 
   const handleTechStackToggle = (tech: string) => {
     setFormData(prev => ({
@@ -79,6 +102,11 @@ export default function CreateInterviewPage() {
       return;
     }
 
+    if (!currentUser?.id) {
+      toast.error("User information not loaded. Please try again.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -86,33 +114,34 @@ export default function CreateInterviewPage() {
       const predefinedQuestions = getQuestionsByType(formData.type);
       const allQuestions = [...predefinedQuestions, ...formData.customQuestions.filter(q => q.trim())];
       
-      const interviewId = uuidv4();
-      
-      // Store interview configuration (you can save this to your database)
-      const interviewConfig = {
-        id: interviewId,
-        role: formData.role,
-        type: formData.type,
-        level: formData.level,
-        duration: formData.duration,
-        techstack: formData.techstack,
-        questions: allQuestions,
-        createdAt: new Date().toISOString()
-      };
-
-      // For now, we'll pass the data via URL params
-      // In a real app, you'd save this to your database
-      const params = new URLSearchParams({
-        interviewId,
-        role: formData.role,
-        type: formData.type,
-        level: formData.level,
-        techstack: formData.techstack.join(','),
-        questions: allQuestions.join('|')
+      // Call the API to generate questions and save interview to database
+      const response = await fetch('/api/vapi/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: formData.type,
+          role: formData.role,
+          level: formData.level,
+          techstack: formData.techstack.join(','),
+          amount: allQuestions.length.toString(),
+          userid: currentUser?.id || '',
+          customQuestions: allQuestions
+        }),
       });
 
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create interview');
+      }
+
+      // Get the interview ID from the response or generate one
+      const interviewId = result.interviewId || uuidv4();
+
       toast.success("Interview created successfully!");
-      router.push(`/interview/${interviewId}?${params.toString()}`);
+      router.push(`/interview/${interviewId}`);
     } catch (error) {
       console.error("Error creating interview:", error);
       toast.error("Failed to create interview. Please try again.");
@@ -257,7 +286,7 @@ export default function CreateInterviewPage() {
         <div className="flex gap-3 pt-4">
           <Button
             type="submit"
-            disabled={isLoading || !formData.role.trim()}
+            disabled={isLoading || !formData.role.trim() || !currentUser?.id}
             className="flex-1"
           >
             {isLoading ? (

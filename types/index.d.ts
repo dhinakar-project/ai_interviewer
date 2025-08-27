@@ -36,6 +36,14 @@ interface User {
   name: string;
   email: string;
   id: string;
+  profileURL?: string;
+  profession?: string;
+  isStudent?: boolean;
+  graduationYear?: string;
+  university?: string;
+  experience?: string;
+  location?: string;
+  bio?: string;
 }
 
 interface InterviewCardProps {
@@ -57,6 +65,7 @@ interface AgentProps {
   feedbackId?: string;
   type: "generate" | "custom";
   questions?: string[];
+  userProfileURL?: string;
 
   // 🆕 Add these props for dynamic interview generation
   role?: string;

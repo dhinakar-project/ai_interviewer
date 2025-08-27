@@ -5,12 +5,19 @@ import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 
 export async function POST(request: Request) {
-    const { type, role, level, techstack, amount, userid } = await request.json();
+    const { type, role, level, techstack, amount, userid, customQuestions } = await request.json();
 
     try {
-        const { text: questions } = await generateText({
-            model: google("gemini-2.0-flash-001"),
-            prompt: `Prepare questions for a job interview.
+        let questions;
+        
+        if (customQuestions && customQuestions.length > 0) {
+            // Use custom questions if provided
+            questions = customQuestions;
+        } else {
+            // Generate questions using AI
+            const { text: generatedQuestions } = await generateText({
+                model: google("gemini-2.0-flash-001"),
+                prompt: `Prepare questions for a job interview.
 The job role is ${role}.
 The job experience level is ${level}.
 The tech stack used in the job is: ${techstack}.
@@ -23,7 +30,9 @@ Return the questions formatted like this:
 
 Thank you! <3
 `,
-        });
+            });
+            questions = JSON.parse(generatedQuestions);
+        }
 
         const interview = {
             role: role,
@@ -33,17 +42,17 @@ Thank you! <3
                 ? techstack.split(",").map((s: string) => s.trim())
                 : [],
 
-            questions: JSON.parse(questions),
+            questions: questions,
             userId: userid,
             finalized: true,
             coverImage: getRandomInterviewCover(),
             createdAt: new Date().toISOString(),
         };
 
-        await db.collection("interviews").add(interview);
+        const interviewRef = await db.collection("interviews").add(interview);
 
         return new Response(
-            JSON.stringify({ success: true }),
+            JSON.stringify({ success: true, interviewId: interviewRef.id }),
             {
                 status: 200,
                 headers: { "Content-Type": "application/json" },

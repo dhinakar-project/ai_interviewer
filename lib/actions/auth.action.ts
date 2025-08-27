@@ -93,6 +93,18 @@ export async function signIn(params: SignInParams) {
                 message: "User does not exist. Create an account.",
             };
 
+        // Check if user exists in our database, if not create them
+        const dbUserRecord = await db.collection("users").doc(userRecord.uid).get();
+        if (!dbUserRecord.exists) {
+            // Create user in database if they don't exist (e.g., Google sign-up)
+            await db.collection("users").doc(userRecord.uid).set({
+                name: userRecord.displayName || userRecord.email?.split('@')[0] || "User",
+                email: userRecord.email || email,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            });
+        }
+
         await setSessionCookie(idToken);
         
         return {
