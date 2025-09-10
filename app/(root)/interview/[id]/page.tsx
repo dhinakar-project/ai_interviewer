@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
-import Agent from "@/components/Agent";
+import InterviewMode from "@/components/InterviewMode";
 import { getRandomInterviewCover } from "@/lib/utils";
 
 import {
@@ -48,16 +48,15 @@ const InterviewDetails = async ({ params }: RouteParams) => {
                 </p>
             </div>
 
-            <Agent
-                userName={user.name}
-                userId={user.id}
+            <InterviewMode
                 interviewId={id}
-                type="custom"
+                userId={user.id}
+                userName={user.name}
+                userProfileURL={user.profileURL}
                 questions={interview.questions}
                 feedbackId={feedback?.id}
-                userProfileURL={user.profileURL}
+                interviewTitle={`${interview.role} Interview`}
             />
-
         </>
     );
 };

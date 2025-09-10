@@ -2,6 +2,7 @@ interface Feedback {
   id: string;
   interviewId: string;
   totalScore: number;
+  bodyLanguageScore?: number;
   categoryScores: Array<{
     name: string;
     score: number;
@@ -10,6 +11,13 @@ interface Feedback {
   strengths: string[];
   areasForImprovement: string[];
   finalAssessment: string;
+  gestureMetrics?: {
+    eyeContactPct?: number;
+    smileEvents?: number;
+    nodEvents?: number;
+    handMovementIntensity?: number;
+    postureStability?: number;
+  };
   createdAt: string;
 }
 
@@ -30,6 +38,13 @@ interface CreateFeedbackParams {
   userId: string;
   transcript: { role: string; content: string }[];
   feedbackId?: string;
+  gestureSummary?: {
+    eyeContactPct?: number;
+    smileEvents?: number;
+    nodEvents?: number;
+    handMovementIntensity?: number;
+    postureStability?: number;
+  };
 }
 
 interface User {
@@ -72,6 +87,10 @@ interface AgentProps {
   level?: string;
   amount?: string;
   techstack?: string;
+
+  // 🆕 UI/control flags
+  hidden?: boolean;
+  autoStart?: boolean;
 }
 
 

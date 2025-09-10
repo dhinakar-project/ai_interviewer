@@ -1,4 +1,4 @@
-import Agent from "@/components/Agent";
+import InterviewMode from "@/components/InterviewMode";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getQuestionsByType } from "@/constants/interviews";
 import { v4 as uuidv4 } from "uuid";
@@ -44,14 +44,14 @@ const Page = async () => {
                     <div className="relative">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-3xl blur-3xl"></div>
                         <div className="relative">
-                            <Agent
-                                userName={user?.name ?? ""}
-                                userId={user?.id ?? ""}
+                            <InterviewMode
                                 interviewId="interview-xyz"
-                                feedbackId={uuidv4()}
-                                type="custom"
-                                questions={questions}
+                                userId={user?.id ?? ""}
+                                userName={user?.name ?? ""}
                                 userProfileURL={user?.profileURL}
+                                questions={questions}
+                                feedbackId={uuidv4()}
+                                interviewTitle="Practice Interview"
                             />
                         </div>
                     </div>
