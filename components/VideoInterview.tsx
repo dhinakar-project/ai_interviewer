@@ -91,27 +91,185 @@ export default function VideoInterview({ interviewId, userId }: VideoInterviewPr
     const [isConnecting, setIsConnecting] = useState(false);
     const metricsRef = useRef<GestureMetrics>({});
     const [transcripts, setTranscripts] = useState<Array<{ role: string; content: string }>>([]);
+    const mediaStartedRef = useRef(false);
 
     // Optimized gesture metrics sender with batching
     const sendGestureMetrics = useGestureMetricsSender(interviewId);
 
-    // Memoized startMedia function
-    const startMedia = useCallback(async () => {
+    // Safely attach a MediaStream to a video element
+    const attachStreamToVideo = useCallback(async (videoEl: HTMLVideoElement, mediaStream: MediaStream) => {
         try {
-            setIsConnecting(true);
-            const media = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            setStream(media);
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = media;
-                await localVideoRef.current.play();
+            console.log("Attaching stream to video element", { 
+                videoTracks: mediaStream.getVideoTracks().length,
+                audioTracks: mediaStream.getAudioTracks().length,
+                videoTrackLabel: mediaStream.getVideoTracks()[0]?.label
+            });
+            
+            // Pause before changing the source to avoid play() interruption
+            try { videoEl.pause(); } catch {}
+            
+            // Clear any existing srcObject to prevent race with new load
+            // @ts-expect-error: srcObject is supported in modern browsers
+            videoEl.srcObject = null;
+            
+            // Small delay to ensure cleanup
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Attach the new stream
+            // @ts-expect-error: srcObject is supported in modern browsers
+            videoEl.srcObject = mediaStream;
+
+            console.log("Stream attached, waiting for metadata...");
+
+            // Wait for metadata with timeout
+            await new Promise<void>((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    console.warn("Metadata timeout, proceeding anyway");
+                    resolve();
+                }, 3000);
+
+                const onLoaded = () => {
+                    console.log("Video metadata loaded, ready to play");
+                    clearTimeout(timeout);
+                    videoEl.removeEventListener("loadedmetadata", onLoaded);
+                    resolve();
+                };
+                
+                if (videoEl.readyState >= 1) {
+                    console.log("Video already has metadata");
+                    clearTimeout(timeout);
+                    resolve();
+                } else {
+                    videoEl.addEventListener("loadedmetadata", onLoaded, { once: true });
+                }
+            });
+
+            // Attempt to play; ignore user-gesture errors silently as autoplay is enabled+muted
+            try { 
+                console.log("Attempting to play video...");
+                await videoEl.play(); 
+                console.log("Video play() succeeded");
+            } catch (e) { 
+                console.warn("Video play() failed:", e);
             }
-            setIsConnecting(false);
-        } catch (err) {
-            console.error(err);
-            setIsConnecting(false);
-            toast.error("Failed to access camera/microphone");
+        } catch (e) {
+            console.error("Failed to attach stream to video:", e);
         }
     }, []);
+
+    // Memoized startMedia function
+    const startMedia = useCallback(async () => {
+        if (mediaStartedRef.current) {
+            console.log("Media already started, skipping");
+            return;
+        }
+        
+        try {
+            mediaStartedRef.current = true;
+            setIsConnecting(true);
+
+            if (typeof navigator === "undefined" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("MediaDevices API not available in this browser.");
+            }
+
+            if (typeof window !== "undefined" && !window.isSecureContext) {
+                throw new Error("Insecure context. Use HTTPS or http://localhost to access camera/microphone.");
+            }
+
+            const constraints: MediaStreamConstraints = {
+                audio: { echoCancellation: true, noiseSuppression: true } as MediaTrackConstraints,
+                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } as MediaTrackConstraints,
+            };
+
+            let media: MediaStream;
+            try {
+                media = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (initialErr: any) {
+                // Retry with relaxed constraints on overconstrained/not found
+                if (
+                    initialErr?.name === "OverconstrainedError" ||
+                    initialErr?.name === "NotFoundError" ||
+                    initialErr?.name === "DevicesNotFoundError"
+                ) {
+                    media = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                } else {
+                    throw initialErr;
+                }
+            }
+            setStream(media);
+            if (localVideoRef.current) {
+                await attachStreamToVideo(localVideoRef.current as HTMLVideoElement, media);
+            }
+            setIsConnecting(false);
+        } catch (err: any) {
+            console.error(err);
+            mediaStartedRef.current = false;
+            setIsConnecting(false);
+
+            const name = err?.name || "";
+            const message = err?.message || "";
+            let errorMessage = "Failed to access camera/microphone";
+
+            if (name === "NotAllowedError" || name === "SecurityError") {
+                errorMessage = "Permission denied. Allow camera and microphone in your browser settings.";
+            } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+                errorMessage = "No camera/microphone found. Plug in a device or select a valid input.";
+            } else if (name === "NotReadableError" || name === "TrackStartError") {
+                errorMessage = "Camera or microphone is in use by another application. Close other apps (Zoom/Teams) and retry.";
+            } else if (name === "OverconstrainedError") {
+                errorMessage = "Requested media constraints not satisfied by any available device.";
+            } else if (message.toLowerCase().includes("insecure context")) {
+                errorMessage = "This page is not secure. Use HTTPS or http://localhost to enable camera/mic.";
+            } else if (message) {
+                errorMessage = `Failed to access camera/microphone: ${message}`;
+            }
+
+            toast.error(errorMessage);
+        }
+    }, []);
+
+    // Ensure we clear loading state when the element is actually ready to play
+    useEffect(() => {
+        const el = localVideoRef.current as HTMLVideoElement | null;
+        if (!el) return;
+        
+        const onCanPlay = () => {
+            console.log("Video can play, clearing loading state");
+            setIsConnecting(false);
+        };
+        const onPlaying = () => {
+            console.log("Video is playing, clearing loading state");
+            setIsConnecting(false);
+        };
+        const onLoaded = () => {
+            console.log("Video metadata loaded, clearing loading state");
+            setIsConnecting(false);
+        };
+        const onError = (e: any) => {
+            console.error("Video element error:", e);
+            setIsConnecting(false);
+            toast.error("Video failed to load. Please check your camera.");
+        };
+        
+        el.addEventListener("loadedmetadata", onLoaded);
+        el.addEventListener("canplay", onCanPlay);
+        el.addEventListener("playing", onPlaying);
+        el.addEventListener("error", onError);
+        
+        // Fallback timeout to clear loading state after 10 seconds
+        const timeout = setTimeout(() => {
+            console.warn("Video loading timeout, clearing loading state");
+            setIsConnecting(false);
+        }, 10000);
+        
+        return () => {
+            clearTimeout(timeout);
+            el.removeEventListener("loadedmetadata", onLoaded);
+            el.removeEventListener("canplay", onCanPlay);
+            el.removeEventListener("playing", onPlaying);
+            el.removeEventListener("error", onError);
+        };
+    }, [localVideoRef]);
 
     // Memoized metrics calculation
     const calculateMetrics = useCallback(() => {
@@ -151,7 +309,16 @@ export default function VideoInterview({ interviewId, userId }: VideoInterviewPr
 
     // Memoized media cleanup
     const cleanupMedia = useCallback(() => {
-        stream?.getTracks().forEach((t) => t.stop());
+        try {
+            stream?.getTracks().forEach((t) => t.stop());
+        } finally {
+            const el = localVideoRef.current as HTMLVideoElement | null;
+            if (el) {
+                try { el.pause(); } catch {}
+                // @ts-expect-error: srcObject is supported in modern browsers
+                el.srcObject = null;
+            }
+        }
     }, [stream]);
 
     useEffect(() => {
@@ -265,7 +432,10 @@ export default function VideoInterview({ interviewId, userId }: VideoInterviewPr
 
     // Memoized control bar handlers
     const controlHandlers = useMemo(() => ({
-        onJoin: () => {
+        onJoin: async () => {
+            if (!stream) {
+                await startMedia();
+            }
             setJoined(true);
             setCollecting(true);
             window.dispatchEvent(new Event("agent-join"));

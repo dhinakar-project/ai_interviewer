@@ -57,7 +57,6 @@ async function Home() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
                 <div className="container mx-auto px-4 py-8">
-                    {/* Header */}
                     <header className="flex items-center justify-between mb-12">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -80,7 +79,6 @@ async function Home() {
                         </div>
                     </header>
 
-                    {/* Hero Section */}
                     <section className="mb-16">
                         <div className="grid lg:grid-cols-2 gap-12 items-center">
                             <div className="space-y-8">
@@ -112,21 +110,6 @@ async function Home() {
                                         </Link>
                                     </Button>
                                 </div>
-
-                                <div className="flex items-center gap-8 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        Real-time Voice AI
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                        Instant Feedback
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                                        Progress Tracking
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="relative">
@@ -145,7 +128,6 @@ async function Home() {
                         </div>
                     </section>
 
-                    {/* Progress Dashboard - Show only if user has completed interviews */}
                     {hasCompletedInterviews && (
                         <section className="mb-16">
                             <div className="flex items-center justify-between mb-8">
@@ -155,57 +137,17 @@ async function Home() {
                                         {userStats?.totalInterviews || 0} interviews completed • {userStats?.averageScore || 0}% average score
                                     </p>
                                 </div>
-                                {userStats?.improvementRate > 0 && (
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
-                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                        </svg>
-                                        <span className="text-sm font-medium text-green-800">
-                                            +{userStats.improvementRate}% improvement
-                                        </span>
-                                    </div>
-                                )}
                             </div>
                             <ProgressDashboard userId={user.id} />
                         </section>
                     )}
 
-                    {/* Quick Stats for New Users */}
-                    {!hasCompletedInterviews && hasPastInterviews && (
-                        <section className="mb-16">
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                                <div className="text-center space-y-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto">
-                                        <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-900">Ready to See Your Progress?</h3>
-                                    <p className="text-gray-600 max-w-md mx-auto">
-                                        Complete your first interview to unlock detailed analytics, performance insights, and personalized recommendations.
-                                    </p>
-                                    <Button asChild className="btn-primary">
-                                        <Link href="/interview">
-                                            Start Your First Interview
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Interview History */}
                     <section className="mb-16">
                         <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h2 className="h2 text-gray-900">Interview History</h2>
                                 <p className="text-body text-gray-600 mt-2">Review your past interviews and track your growth</p>
                             </div>
-                            {hasPastInterviews && (
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href="/interviews">View All</Link>
-                                </Button>
-                            )}
                         </div>
 
                         <div className="grid-auto-fit">
@@ -236,20 +178,12 @@ async function Home() {
                                 <div className="col-span-full">
                                     <div className="card-elevated p-12 text-center">
                                         <div className="mb-6">
-                                            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
                                             <h3 className="h3 text-gray-900 mb-2">No interviews yet</h3>
                                             <p className="text-body text-gray-600 mb-6">
                                                 Start your first interview to see your progress history here
                                             </p>
                                             <Button asChild className="btn-primary btn-lg">
                                                 <Link href="/interview">
-                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
                                                     Start Your First Interview
                                                 </Link>
                                             </Button>
@@ -259,32 +193,6 @@ async function Home() {
                             )}
                         </div>
                     </section>
-
-                    {/* Available Interviews */}
-                    {hasUpcomingInterviews && (
-                        <section className="mb-16">
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <h2 className="h2 text-gray-900">Available Interviews</h2>
-                                    <p className="text-body text-gray-600 mt-2">Take these interviews to improve your skills</p>
-                                </div>
-                            </div>
-
-                            <div className="grid-auto-fit">
-                                {allInterview?.slice(0, 6).map((interview) => (
-                                    <InterviewCard
-                                        key={interview.id}
-                                        userId={user?.id}
-                                        interviewId={interview.id}
-                                        role={interview.role}
-                                        type={interview.type}
-                                        techstack={interview.techstack}
-                                        createdAt={interview.createdAt}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    )}
                 </div>
             </div>
         );
